@@ -7,9 +7,10 @@
 #include "Cell.h"
 
 
+
+
 SudokuPuzzle::SudokuPuzzle() 
 {
-	// Add code to initialise the SudokuPuzzle object
 }
 
 
@@ -19,17 +20,8 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 
 	// Get start time
 	const auto startTime = std::chrono::high_resolution_clock::now();
-
-	// Add code to solve the puzzle
-
-
-	//Keep going through every cell on the board until 
-
-
-	//I think last sudoku didnt notify others cells when a cell was solved, which caused problems
-
-
-	//Remove pre derived valeus from the all candidate lists and then start teh main game loop?
+	
+	//Remove pre derived values from the all candidate lists
 	for (int row = 0; row < 9; row++)
 	{
 		for (int column = 0; column < 9; column++)
@@ -37,10 +29,6 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 			//If the value is pre given
 			if (m_grid[row][column].isGiven())
 			{
-				if (row == 2 && column == 7)
-				{
-					int debug = -1;
-				}
 				Cell cell = m_grid[row][column];
 				//Remove the value from that rows, columns and blocks candidate lists
 				removeCandidateFromBlock(row, column,cell.getValue());
@@ -48,23 +36,23 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 				removeCandidateFromColumn(column, cell.getValue());
 				
 			}
+		
 		}
+	
 	}
-	//row 0 col 6 wrong solved
-	//row 2  col 7 candidate not removed correctly
+	m_loops++;
+
 	// Game loop 
 	bool solved = false;
-	int temp = 20;
-	while (temp)
+	
+	// Variables for testing performance
+	while (!solved)
 	{
 		for (int row = 0; row < 9; row++)
 		{
+			solved = true;
 			for (int column = 0; column < 9; column++)
 			{
-				if (row == 0 && column == 6)
-				{
-					int d = -1;
-				}
 
 				//Is the cell pre derived
 				Cell cell = m_grid[row][column];
@@ -73,6 +61,7 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 					// is the cell solved
 					if (cell.getValue() == 0)
 					{
+						solved = false;
 						
 						//Hidden single
 							std::vector<int> candList = cell.getCandidateList();
@@ -90,8 +79,9 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 									removeCandidateFromBlock(row, column, candList[i]);
 									removeCandidateFromRow(row, candList[i]);
 									removeCandidateFromColumn(column, candList[i]);
-									std::cout << "Hidden single in row Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
+									//std::cout << "Hidden single in row Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
 									//stop the loop
+									m_cells_solved++;
 									break;
 								}
 								if (checkColumnForHiddenSingle(row, column, candList[i]))
@@ -104,8 +94,9 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 									removeCandidateFromBlock(row, column, candList[i]);
 									removeCandidateFromRow(row, candList[i]);
 									removeCandidateFromColumn(column, candList[i]);
-									std::cout << "Hidden single in column Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
+									//std::cout << "Hidden single in column Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
 									//stop the loop
+									m_cells_solved++;
 									break;
 								}
 								if (checkBlockForHiddenSingle(row, column, candList[i]))
@@ -118,7 +109,9 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 									removeCandidateFromBlock(row, column, candList[i]);
 									removeCandidateFromRow(row, candList[i]);
 									removeCandidateFromColumn(column, candList[i]);
-									std::cout << "Hidden single in BLOCK Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
+									//std::cout << "Hidden single in BLOCK Found! " + std::to_string(row) + " Column: " + std::to_string(column) + "\n";
+
+									m_cells_solved++;
 									//stop the loop
 									break;
 								}
@@ -128,7 +121,7 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 							//Naked single
 							if (cell.getCandListSize() == 1)
 							{
-								std::cout << "Naked singel found !! Row: " + std::to_string(row) + " Column: " + std::to_string(column) + " Value: " + std::to_string(cell.getCandidateAt(0)) + "\n\n";
+								//std::cout << "Naked singel found !! Row: " + std::to_string(row) + " Column: " + std::to_string(column) + " Value: " + std::to_string(cell.getCandidateAt(0)) + "\n\n";
 								int candidate = cell.getCandidateAt(0);
 
 								m_grid[row][column].setValue(candidate);
@@ -137,23 +130,19 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 								removeCandidateFromRow(row, candidate);
 								removeCandidateFromColumn(column, candidate);
 
+								m_cells_solved++;
+								
 
 
 							}
-							
 
 
-							//The hidden single implementation is bugged
-							//The value is a hidden signle only  if its the only candidate of that value appearing  in row, column, and block
-							//Think there is something wrong with the blocks idk
 							
-							
-						
 					}
 				}
 			}
 		}
-		temp--;
+		m_loops++;
 	}
 
 
@@ -161,8 +150,13 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 	const auto endTime = std::chrono::high_resolution_clock::now();
 	const auto duration = (endTime - startTime).count();
 
+
 	// Sample timing output in nanoseconds
 	std::cout << duration << "ns" << std::endl;
+	std::cout << m_loops << " loops" << std::endl;
+	std::cout << m_cells_solved << " cells solved" << std::endl;
+	std::cout << m_candidates_considered << " candidates considered" << std::endl;
+
 
 	// Output the solved puzzle
 	output();
@@ -195,6 +189,7 @@ void SudokuPuzzle::readPuzzle(const char filenameIn[])
 			{
 				cell = Cell(newValue, true);
 			}
+
 			//Add the cell to the grid
 			m_grid[i][y] = cell;
 
@@ -204,6 +199,7 @@ void SudokuPuzzle::readPuzzle(const char filenameIn[])
 	std::cout << "File loaded\n";
 }
 
+// Check the row for a hidden single
 bool SudokuPuzzle::checkRowForHiddenSingle(int row, int column, int candidate)
 {
 	//If any of the other cells in the row have candidate as the candidate, return false
@@ -213,12 +209,15 @@ bool SudokuPuzzle::checkRowForHiddenSingle(int row, int column, int candidate)
 			continue;
 		if (m_grid[row][col].isCandidate(candidate))
 		{
+			m_candidates_considered++;
 			return false;
 		}
 	}
 
 	return true;
 }
+
+// Check the column for a hidden single
 bool SudokuPuzzle::checkColumnForHiddenSingle(int row, int column, int candidate)
 {
 	for (int i = 0; i < 9; i++)
@@ -228,11 +227,15 @@ bool SudokuPuzzle::checkColumnForHiddenSingle(int row, int column, int candidate
 			continue;
 		}
 		if (m_grid[i][column].isCandidate(candidate)) {
+			m_candidates_considered++;
+
 			return false;
 		}
 	}
 	return true;
 }
+// Check the block for a hidden single
+
 bool SudokuPuzzle::checkBlockForHiddenSingle(int row, int column, int candidate)
 {
 	int rowBlock = row / 3;
@@ -289,6 +292,8 @@ bool SudokuPuzzle::checkBlockForHiddenSingle(int row, int column, int candidate)
 			//only remove the candidate if the value is 0 (not solved yet)
 			if (m_grid[i][y].isCandidate(candidate))
 			{
+				m_candidates_considered++;
+
 				return false;
 			}
 		}
@@ -296,6 +301,9 @@ bool SudokuPuzzle::checkBlockForHiddenSingle(int row, int column, int candidate)
 
 	return true;
 }
+
+// Remove the candidate from all cells in the row
+
 void SudokuPuzzle::removeCandidateFromRow(int row, int candidate)
 {
 	//Loop through the row and remove candidate from each cell
@@ -304,7 +312,7 @@ void SudokuPuzzle::removeCandidateFromRow(int row, int candidate)
 		m_grid[row][col].removeCandidate(candidate);
 	}
 }
-
+// Remove the candidate from all cells in the column
 void SudokuPuzzle::removeCandidateFromColumn(int column, int candidate)
 {
 	for (int row = 0; row < 9; row++)
@@ -313,11 +321,10 @@ void SudokuPuzzle::removeCandidateFromColumn(int column, int candidate)
 	}
 }
 
+// Remove the candidate from all cells in the block
 void SudokuPuzzle::removeCandidateFromBlock(int row, int column, int candidate)
 {
 	
-	//Need the values for row and column so I can loop through the block and remove candidates
-	//Try to round up to the nearest multiple of 3 (each block has 3 columns and 3 rows)? 
 
 	int rowBlock = row / 3;
 	int columnBlock = column / 3;
@@ -325,6 +332,7 @@ void SudokuPuzzle::removeCandidateFromBlock(int row, int column, int candidate)
 	int startColumn = 0;
 	int endRow = 3;
 	int endColumn = 3;
+
 	//Calculate the starting row of the block
 	if (rowBlock == 0)
 	{

@@ -6,14 +6,16 @@ class SudokuPuzzle
 {
 public:
 	SudokuPuzzle();
-
 	void solve (const char filenameIn[]);
 
 	// Add your code here
 
 private:
-	void output() const;
+	int m_loops = 0;
+	int m_cells_solved = 0;
+	int m_candidates_considered = 0;
 
+	void output() const;
 	void readPuzzle(const char filenameIn[]);
 	void removeCandidateFromRow(int row, int candidate);
 	void removeCandidateFromColumn(int column, int candidate);
