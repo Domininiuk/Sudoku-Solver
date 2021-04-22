@@ -54,7 +54,7 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 			for (int column = 0; column < 9; column++)
 			{
 
-				//Is the cell pre derived
+				//Is the cell a pre defined value
 				Cell cell = m_grid[row][column];
 				if (!cell.isGiven())
 				{
@@ -84,7 +84,7 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 									m_cells_solved++;
 									break;
 								}
-								if (checkColumnForHiddenSingle(row, column, candList[i]))
+								  if (checkColumnForHiddenSingle(row, column, candList[i]))
 								{
 									//Set the single as value of the cell
 									m_grid[row][column].setValue(candList[i]);
@@ -99,7 +99,7 @@ void SudokuPuzzle::solve(const char filenameIn[]) {
 									m_cells_solved++;
 									break;
 								}
-								if (checkBlockForHiddenSingle(row, column, candList[i]))
+								  if (checkBlockForHiddenSingle(row, column, candList[i]))
 								{
 									//Set the single as value of the cell
 									m_grid[row][column].setValue(candList[i]);
